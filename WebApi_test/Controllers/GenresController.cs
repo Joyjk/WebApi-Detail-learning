@@ -24,14 +24,17 @@ namespace WebApi_test.Controllers
         {
             return await repository.getAllGenre();
         }
+
+
+
         //[HttpGet("{id}")]
-        [HttpGet("{id:int}/{param2=fff}")]
-        public IActionResult Get(int id,[BindRequired] string param2)
+        [HttpGet("{id:int}")]
+        public IActionResult Get(int id,[FromHeader] string param2)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
             var genre = repository.getGenreByID(id);
 
             if(genre == null)
@@ -41,12 +44,14 @@ namespace WebApi_test.Controllers
             return Ok(genre);
         }
 
-        public ActionResult Post()
+        [HttpPost]
+        public ActionResult Post([FromBody]Genre genre)
         {
-            return NoContent();
-        }
 
-        public ActionResult Put()
+            return Ok(genre);
+        }
+        [HttpPut]
+        public ActionResult Put([FromBody]Genre genre)
         {
             return NoContent();
         }
