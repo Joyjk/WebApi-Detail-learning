@@ -20,13 +20,19 @@ namespace WebApi_test.Services
 
         public async Task<List<Genre>> getAllGenre()
         {
-            await Task.Delay(10000);
+            await Task.Delay(1);
             return _genres; 
         }
 
         public Genre getGenreByID(int id)
         {
             return _genres.FirstOrDefault(x => x.Id == id);
+        }
+
+        public void AddGenre(Genre genre)
+        {
+            genre.Id = _genres.Max(x => x.Id) + 1;
+            _genres.Add(genre);
         }
     }
 }

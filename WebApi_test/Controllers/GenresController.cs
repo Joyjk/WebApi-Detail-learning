@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WebApi_test.Entities;
@@ -13,22 +14,25 @@ namespace WebApi_test.Controllers
     public class GenresController : ControllerBase
     {
         private readonly IRepository repository;
+        private readonly ILogger<GenresController> logger;
 
-        public GenresController(IRepository repository)
+        public GenresController(IRepository repository, ILogger<GenresController> logger)
         {
             this.repository = repository;
+            this.logger = logger;
         }
 
         [HttpGet]
         public async Task<ActionResult< List<Genre>>> Get()
         {
+            logger.LogInformation("Getting all genres");
             return await repository.getAllGenre();
         }
 
 
 
         //[HttpGet("{id}")]
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name ="getGenre")]
         public IActionResult Get(int id,[FromHeader] string param2)
         {
             //if (!ModelState.IsValid)
@@ -39,16 +43,19 @@ namespace WebApi_test.Controllers
 
             if(genre == null)
             {
+                logger.LogWarning($"Genre ID: {id} not found");
                 return NotFound();
             }
+            logger.LogDebug("Debug is opening.....");
             return Ok(genre);
         }
 
         [HttpPost]
         public ActionResult Post([FromBody]Genre genre)
         {
+            repository.AddGenre(genre);
 
-            return Ok(genre);
+            return new CreatedAtRouteResult("getGenre", new { Id = genre.Id},genre);
         }
         [HttpPut]
         public ActionResult Put([FromBody]Genre genre)

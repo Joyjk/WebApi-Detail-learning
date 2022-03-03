@@ -8,5 +8,6 @@ namespace WebApi_test.Services
     {
         Task<List<Genre>> getAllGenre();
         public Genre getGenreByID(int id);
+        public void AddGenre(Genre genre);
     }
 }
