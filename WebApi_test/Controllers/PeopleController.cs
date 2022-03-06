@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using WebApi_test.DTO;
 using WebApi_test.Entities;
+using WebApi_test.Services;
 
 namespace WebApi_test.Controllers
 {
@@ -15,11 +17,15 @@ namespace WebApi_test.Controllers
     {
         private readonly ApplicationDbContext dbContext;
         private readonly IMapper mapper;
+        private readonly IFileStorageService fileStorageService;
+        private readonly string containerName = "people";
 
-        public PeopleController(ApplicationDbContext dbContext, IMapper mapper)
+        public PeopleController(ApplicationDbContext dbContext, IMapper mapper,
+            IFileStorageService fileStorageService)
         {
             this.dbContext = dbContext;
             this.mapper = mapper;
+            this.fileStorageService = fileStorageService;
         }
 
         [HttpGet]
@@ -45,6 +51,18 @@ namespace WebApi_test.Controllers
          public async Task<ActionResult<PersonDTO>> Post([FromForm] PersonCreationDTO personCreationDTO)
         {
             var person = mapper.Map<Person>(personCreationDTO);
+
+            if(personCreationDTO.Picture!=null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await personCreationDTO.Picture.CopyToAsync(memoryStream);
+                    var content  = memoryStream.ToArray();
+                    var extension = Path.GetExtension(personCreationDTO.Picture.FileName);
+                    person.Picture = await fileStorageService.SaveFile(content, extension, containerName, personCreationDTO.Picture.ContentType);
+                }
+            }
+
             dbContext.Add(person);
             await dbContext.SaveChangesAsync();
             var personDTO = mapper.Map<PersonDTO>(person);

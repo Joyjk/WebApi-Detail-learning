@@ -34,6 +34,9 @@ namespace WebApi_test
 
             services.AddAutoMapper(typeof(Startup));
 
+            services.AddTransient<IFileStorageService, InAppStorageService>();
+            services.AddHttpContextAccessor();
+
             //services.AddSingleton<IRepository, InMemoryRepository>();
             //services.AddScoped<>
         }
@@ -45,6 +48,8 @@ namespace WebApi_test
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseStaticFiles();
 
             app.UseRouting();
 
