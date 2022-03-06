@@ -90,8 +90,18 @@ namespace WebApi_test.Controllers
 
             return NoContent();
         }
-        public ActionResult Delete()
+        [HttpDelete("{id}")]
+        public async Task< ActionResult> Delete(int id)
         {
+            var exists =  await dbContext.Genres.AnyAsync(x => x.Id == id);
+            if (!exists)
+            {
+                return NotFound();
+            }
+            dbContext.Remove(new Genre { Id = id });
+            await dbContext.SaveChangesAsync();
+
+
             return NoContent();
         }
 

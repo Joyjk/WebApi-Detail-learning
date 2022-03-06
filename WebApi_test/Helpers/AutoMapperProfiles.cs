@@ -10,6 +10,9 @@ namespace WebApi_test.Helpers
         {
             CreateMap<Genre, GenreDTO>().ReverseMap();
             CreateMap< GenreCreatingDTO, Genre>();
+
+            CreateMap<Person, PersonDTO>().ReverseMap();
+            CreateMap<PersonCreationDTO, Person>();
         }
     }
 }
