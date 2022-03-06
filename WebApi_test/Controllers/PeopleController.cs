@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using WebApi_test.DTO;
 using WebApi_test.Entities;
+using WebApi_test.Helpers;
 using WebApi_test.Services;
 
 namespace WebApi_test.Controllers
@@ -29,9 +30,11 @@ namespace WebApi_test.Controllers
         }
 
         [HttpGet]
-        public async Task <ActionResult<List<PersonDTO>>> Get()
+        public async Task <ActionResult<List<PersonDTO>>> Get([FromQuery] PaginationDTO pagination)
         {
-            var people = await dbContext.People.ToListAsync();
+            var queryable = dbContext.People.AsQueryable();
+            await HttpContext.InsertPaginationParametersInResponse(queryable, pagination.RecordPerPage);
+            var people = await queryable.Paginate(pagination).ToListAsync();
             return mapper.Map<List<PersonDTO>>(people);
         }
         [HttpGet("{id}", Name ="getPerson")]
@@ -49,7 +52,7 @@ namespace WebApi_test.Controllers
         
          [HttpPost]
          public async Task<ActionResult<PersonDTO>> Post([FromForm] PersonCreationDTO personCreationDTO)
-        {
+         {
             var person = mapper.Map<Person>(personCreationDTO);
 
             if(personCreationDTO.Picture!=null)
@@ -68,6 +71,36 @@ namespace WebApi_test.Controllers
             var personDTO = mapper.Map<PersonDTO>(person);
 
             return new CreatedAtRouteResult("getPerson", new { id=person.Id }, personDTO);
+         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Put(int id, [FromBody] PersonCreationDTO personUpdateDTO)
+        {
+            var personDB = await dbContext.People.FirstOrDefaultAsync(x => x.Id == id);
+            if(personDB==null)
+            {
+                return NotFound();
+            }
+
+            personDB = mapper.Map(personUpdateDTO, personDB);
+
+
+            if (personUpdateDTO.Picture != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await personUpdateDTO.Picture.CopyToAsync(memoryStream);
+                    var content = memoryStream.ToArray();
+                    var extension = Path.GetExtension(personUpdateDTO.Picture.FileName);
+                    personDB.Picture = 
+                        await fileStorageService.SaveFile(content, extension, containerName,
+                         personUpdateDTO.Picture.ContentType);
+                }
+            }
+            await dbContext.SaveChangesAsync();
+
+            return NoContent();
+
         }
 
 
