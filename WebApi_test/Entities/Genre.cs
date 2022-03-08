@@ -14,6 +14,8 @@ namespace WebApi_test.Entities
         [FirstLetterUppercase]
         public string Name { get; set; }
 
+        public List<MoviesGenres> MoviesGenres { get; set; }
+
 
 
 
