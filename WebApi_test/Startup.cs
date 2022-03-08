@@ -35,6 +35,9 @@ namespace WebApi_test
             services.AddAutoMapper(typeof(Startup));
 
             services.AddTransient<IFileStorageService, InAppStorageService>();
+
+            services.AddTransient<IHostedService, MovieInTheatersService>();
+
             services.AddHttpContextAccessor();
 
             //services.AddSingleton<IRepository, InMemoryRepository>();

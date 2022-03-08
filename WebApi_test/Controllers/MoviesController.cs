@@ -10,7 +10,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using WebApi_test.DTO;
 using WebApi_test.Entities;
+using WebApi_test.Helpers;
 using WebApi_test.Services;
+using System.Linq.Dynamic.Core;
+using Microsoft.Extensions.Logging;
 
 namespace WebApi_test.Controllers
 {
@@ -21,27 +24,96 @@ namespace WebApi_test.Controllers
         private readonly ApplicationDbContext dbContext;
         private readonly IMapper mapper;
         private readonly IFileStorageService fileStorageService;
+        private readonly ILogger<MoviesController> logger;
         private readonly string containerName = "movies";
 
         public MoviesController(ApplicationDbContext dbContext, IMapper mapper,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService, ILogger<MoviesController> logger)
         {
             this.dbContext = dbContext;
             this.mapper = mapper;
             this.fileStorageService = fileStorageService;
+            this.logger = logger;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MovieDTO>>> Get()
+        public async Task<ActionResult<IndexMoviePageDTO>> Get()
         {
             var top = 5;
             var today = DateTime.Today;
             var upcomingReleases = await dbContext.Movies.Where(x => x.ReleaseDate > today)
                 .OrderBy(x => x.ReleaseDate).Take(top).ToListAsync();
 
-            var movie = await dbContext.Movies.ToListAsync();
-            return mapper.Map<List<MovieDTO>>(movie);
+            var inTheaters = await dbContext.Movies
+                .Where(x => x.InTheaters).Take(top).ToListAsync();
+
+
+            //var movie = await dbContext.Movies.ToListAsync();
+            var results = new IndexMoviePageDTO();
+            results.InTheaters = mapper.Map<List<MovieDTO>>(inTheaters);
+            results.UpcomingRealeses = mapper.Map<List<MovieDTO>>(upcomingReleases);
+            return results;
         }
+        [HttpGet("filter")]
+        //public async Task<ActionResult<List<MovieDTO>> Filter([FromQuery] FilterMoviesDTO )
+        public async Task <ActionResult <List<MovieDTO>>> Filter([FromQuery] FilterMovieDTO filterMovieDTO)
+        {
+            var movieQuaryable = dbContext.Movies.AsQueryable();
+            if(!string.IsNullOrWhiteSpace(filterMovieDTO.Title))
+            {
+                movieQuaryable = movieQuaryable.Where(x => x.Title.Contains(filterMovieDTO.Title)); 
+            }
+            if(filterMovieDTO.InTheaters)
+            {
+                movieQuaryable = movieQuaryable.Where(x => x.InTheaters);
+            }
+            if(filterMovieDTO.UpComingReleases)
+            {
+                var today = DateTime.Today;
+                movieQuaryable = movieQuaryable.Where(X => X.ReleaseDate > today);
+            }
+            if(filterMovieDTO.GenreId!=0)
+            {
+                movieQuaryable = movieQuaryable.Where(x => x.MoviesGenres.Select(y => y.GenreId).Contains(filterMovieDTO.GenreId));
+                
+            }
+            if(!string.IsNullOrWhiteSpace(filterMovieDTO.OrderingField))
+            {
+                //if(filterMovieDTO.OrderingField=="title")
+                //{
+                //    if(filterMovieDTO.AscendingOrder)
+                //    {
+                //        movieQuaryable = movieQuaryable.OrderBy(x => x.Title);
+                //    }
+                //    else
+                //    {
+                //        movieQuaryable = movieQuaryable.OrderByDescending(x => x.Title);
+                //    }
+                //}
+
+                try
+                {
+                    movieQuaryable = movieQuaryable.OrderBy($"{filterMovieDTO.OrderingField} {(filterMovieDTO.AscendingOrder ? "ascending" : "descending")}");
+                }
+                catch 
+                {
+                    logger.LogError("Filter message error");
+                    return NotFound();
+                }
+
+                
+            }
+
+            
+
+            await HttpContext.InsertPaginationParametersInResponse(movieQuaryable, filterMovieDTO.RecordsPerPage);
+
+            var movies = await movieQuaryable.Paginate(filterMovieDTO.Pagination).ToListAsync();
+
+            return mapper.Map<List<MovieDTO>>(movies);
+        }
+
+
         [HttpGet("{id}", Name = "getMovie")]
         public async Task<ActionResult<List<MovieDTO>>> GetByID(int id)
         {
