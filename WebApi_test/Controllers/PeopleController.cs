@@ -29,7 +29,7 @@ namespace WebApi_test.Controllers
             this.fileStorageService = fileStorageService;
         }
 
-        [HttpGet]
+        [HttpGet( Name = "getPeople")]
         public async Task <ActionResult<List<PersonDTO>>> Get([FromQuery] PaginationDTO pagination)
         {
             var queryable = dbContext.People.AsQueryable();

@@ -14,6 +14,8 @@ using WebApi_test.Helpers;
 using WebApi_test.Services;
 using System.Linq.Dynamic.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace WebApi_test.Controllers
 {
@@ -125,6 +127,7 @@ namespace WebApi_test.Controllers
             return mapper.Map<List<MovieDTO>>(movie);
         }
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<ActionResult> Post([FromForm] MovieCreationDTO movieCreationDTO)
         {
             var movie = mapper.Map<Movie>(movieCreationDTO);

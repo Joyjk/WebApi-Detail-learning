@@ -1,0 +1,27 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections;
+using System.Collections.Generic;
+using WebApi_test.DTO;
+
+namespace WebApi_test.Controllers
+{
+    [Route("api")]
+    [ApiController]
+    public class RootController : ControllerBase
+    {
+        [HttpGet(Name = "getRoot")]
+        public ActionResult<IEnumerable<Link>> Get()
+        {
+            List<Link> links = new List<Link>();
+
+            links.Add(new Link(href: Url.Link("getRoot", new {}), rel:"self",method:"GET"));
+            links.Add(new Link(href: Url.Link("createUser", new {}), rel:"create-user",method:"POST"));
+            links.Add(new Link(href: Url.Link("Login", new {}), rel:"login",method:"GET"));
+            links.Add(new Link(href: Url.Link("getGenres", new {}), rel:"get-genres",method:"GET"));
+            links.Add(new Link(href: Url.Link("getPeople", new {}), rel:"get-people",method:"GET"));
+
+            return links; 
+        }
+    }
+}

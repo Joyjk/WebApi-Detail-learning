@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using WebApi_test.DTO;
 using WebApi_test.Entities;
@@ -25,6 +26,11 @@ namespace WebApi_test.Helpers
                 .ForMember(x=>x.MoviesGenres, options=>options.MapFrom(MapMoviesGenres))
                 .ForMember(x=>x.MoviesActors, options=>options.MapFrom(MapMoviesActors));
             CreateMap<Movie, MoviePatchDTO>();
+
+
+            CreateMap<IdentityUser, UserDTO>().ForMember(x => x.EmailAddress,
+                options => options.MapFrom(x => x.Email)).ForMember(x => x.UserId,
+                options => options.MapFrom(x => x.Id));
 
 
 

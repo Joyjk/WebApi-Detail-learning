@@ -3,16 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using NetTopologySuite.Geometries;
 using WebApi_test;
 
 namespace WebApi_test.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220309040019_AdminRole")]
+    partial class AdminRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -304,51 +305,6 @@ namespace WebApi_test.Migrations
                             InTheaters = true,
                             ReleaseDate = new DateTime(2020, 12, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Title = "Avengers: Endgame"
-                        });
-                });
-
-            modelBuilder.Entity("WebApi_test.Entities.MovieTheater", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Point>("Location")
-                        .HasColumnType("geography");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MovieTheaters");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-69.9388777 18.4839233)"),
-                            Name = "Agora"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-69.9118804 18.482614)"),
-                            Name = "Sambil"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-69.856427 18.506934)"),
-                            Name = "Megacentro"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-73.986227 40.730898)"),
-                            Name = "Village East Cinema"
                         });
                 });
 
